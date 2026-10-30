@@ -3,6 +3,10 @@ define narrator = Character(None, what_color="#3c3d3f")
 define t = Character("佟时雨", color="#53617f")
 define s = Character("宋艺可", color="#98934b")
 
+# --- 初始化好感度与信任值 ---
+default song_favor = 0
+default song_trust = 10
+
 # --- 注册你的图片 ---
 image bus = "bus.png"
 image daojishi = "daojishi.png"
@@ -24,12 +28,26 @@ transform right_char:
     yalign 1.0
 
 transform center_char:
-    zoom 0.2
+    zoom 0.8
     xalign 0.5
     yalign 1.0
 
+# --- 状态 UI 界面 ---
+screen status_hud():
+    zorder 100
+    frame:
+        xalign 0.98
+        yalign 0.02
+        background "#00000080"
+        padding (15, 15)
+        vbox:
+            text "好感: [song_favor]" color "#ffb3b3" size 22
+            text "信任: [song_trust]" color "#a8c5ff" size 22
+
 # 故事开始
 label start:
+    show screen status_hud # 开启右上角数值显示
+    
     # 1. 梦境部分
     scene black with fade
     "最先感觉到的是阳光的呼吸，轻轻拍在脸上。"
@@ -49,7 +67,7 @@ label start:
     t "就像……有人给我设置好了代码，我只是遵循代码在执行程序。"
     "公交车转了一个弯，进入了更宽敞的街道，随后缓缓减速。车内响起语音播报：'七区二十中到了。开门请当心。'"
 
-    show tongshiyu at center with dissolve 
+    show tongshiyu at center_char with dissolve 
     "佟时雨拎起书包，透过反光的玻璃看见自己厚厚的齐刘海和黑框眼镜，校服套在瘦削的身体上显得有些空荡。"
     "门缓缓打开，她撑起伞，雨珠噼里啪啦落在伞面上。"
     hide tongshiyu
@@ -71,7 +89,7 @@ label start:
 
     scene daojishi with fade
     hide songyike
-    show tongshiyu at center with dissolve 
+    show tongshiyu at center_char with dissolve 
 
     "那道瘦削的背影停下脚步，回头，眼睛半藏在眼镜和厚厚的刘海后面。宋艺可胳膊上戴着红袖章，拿着DV机，一路小跑到她身边。"
     hide tongshiyu
@@ -85,11 +103,16 @@ label start:
     s "第一次抓到就算了，我当没看见，你赶紧回教室吧。等会儿景序要是看到了，保准扣我们班分……"
     "佟时雨盯着那边显示屏上几个大大的红字'距离终测还有100天'"
     
-    # 5. 关键选项（多分支）
+    # 5. 关键选项（多分支 + 数值变化）
     menu:
         "问关于终测的事":
+            $ song_favor += 5  # 问问题，好感度增加
+            $ song_trust -= 2  # 显得反常，信任度减少
             jump branch_ask 
+            
         "假装没事回教室":
+            $ song_favor -= 5  # 敷衍，好感度减少
+            $ song_trust += 5  # 表现正常，信任度增加
             jump branch_leave 
 
 
@@ -166,7 +189,7 @@ label ending_scene2:
 
 
 # ==========================================
-# 公共结尾
+# 公共结尾 (测试数值判定)
 # ==========================================
 label ending_scene:
     hide songyike
@@ -175,4 +198,17 @@ label ending_scene:
     "栏杆外是大雨欲来的天空，凭白昼的时辰维持着昏暗的光；栏杆内是熄灯的走廊，切割光影后借一点外界的光，使其不至于像傍晚。"
     "她感觉自己好像做了一个很长的梦。"
     t "（自己的意识与身体保持弱连接太久了……）"
+    
+    # 【新增：数值判定剧情】
+    if song_trust >= 12:
+        "转过拐角，一滴颜料从天花板上忽地坠落。佟时雨感觉口袋里多了一样东西。"
+        "……是刚才擦肩而过时，宋艺可偷偷塞给她的一张小纸条。"
+        t "（上面写着：『今晚小心。』）"
+    else:
+        "佟时雨回头看了一眼，宋艺可正站在原地，用审视的目光盯着她的背影。"
+        t "（她似乎对我起疑心了……）"
+
+   
+    
+    hide screen status_hud # 结束剧情时隐藏 UI
     return
